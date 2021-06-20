@@ -1,0 +1,39 @@
+version: 1
+disable_existing_loggers: False
+root:
+  level: WARN
+  handlers: [file]
+loggers:
+  __main__:
+    level: INFO
+    handlers: [console, rotatingFile]
+    propagate: yes
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: default
+    stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    level: WARN
+    formatter: verbose
+    filename: test.log
+    mode: a+
+    encoding: utf-8
+  rotatingFile:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: verbose
+    filename: rotate_test.log
+    encoding: utf-8
+    maxBytes: 1024
+    backupCount: 3
+formatters:
+  default:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    style: '%'
+  verbose:
+    format: '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
+    datefmt: '%Y-%m-%d %H:%M:%S'
+    style: '%'

@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Refresh Amazon QuickSight SPICE Dataset
+Parameters:
+  S3GlueScriptLocation:
+    Type: String
+    Description: Glue job script location
+    Default: 's3://my_script_bucket/scripts'
+
+Resources:
+  ########################################
+  # Lambda function
+  ########################################
+  FunctionTestLogging:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: test_logging
+      CodeUri: src/test_logging/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Tracing: Active
+      Timeout: 10
+      Environment:
+        Variables: 
+          LOG_LEVEL: DEBUG
+
+  ########################################
+  # Glue job
+  # https://docs.aws.amazon.com/glue/latest/dg/add-job-python.html
+  ########################################
+  FunctionTestLogging:
+    Type: AWS::Glue::Job
+    Properties: 
+      Name: test_logging
+      Command:
+        Name: pythonshell
+        PythonVersion: 3
+        ScriptLocation: !Sub "${S3GlueScriptLocation}/test_logging.py"
+      DefaultArguments:
+        --log_level: DEBUG
+      ExecutionProperty:
+        MaxConcurrentRuns: 1
+      GlueVersion: 1.0
+      MaxCapacity: 0.0625
+      MaxRetries: 0
+      Role: String
+      Timeout: 1
