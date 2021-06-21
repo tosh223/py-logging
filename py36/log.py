@@ -1,5 +1,6 @@
+import sys
+import logging
 from time import gmtime
-from logging import config, getLogger, Formatter, StreamHandler, FileHandler, DEBUG, WARN
 from traceback import format_exception_only
 
 from yaml import safe_load
@@ -11,61 +12,67 @@ class ConfiguredLogger():
     def __init__(self):
         with open(CONFIG_FILE) as file:
             conf = safe_load(file)
-        config.dictConfig(conf)
-        Formatter.converter = gmtime
+        logging.config.dictConfig(conf)
+        logging.Formatter.converter = gmtime
     
     def create(self, name):
-        return getLogger(name)
+        return logging.getLogger(name)
 
 
 class HandmadeLogger():
-    def __init__(self):
-        default_fmt = Formatter()
+    def __init__(self, log_level):
+        self.__num_level = getattr(logging, log_level)
+        default_fmt = logging.Formatter()
         default_fmt.converter = gmtime
         FMT = '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
         DATE_FMT = '%Y-%m-%d %H:%M:%S'
-        verbose_fmt = Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
+        verbose_fmt = logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
         verbose_fmt.converter = gmtime
 
-        self.__sh = StreamHandler()
-        self.__sh.setLevel(WARN)
+        self.__sh = logging.StreamHandler()
+        self.__sh.setLevel(self.__num_level)
         self.__sh.setFormatter(default_fmt)
 
-        self.__fh = FileHandler('test.log', 'a+')
-        self.__fh.setLevel(DEBUG)
+        self.__fh = logging.FileHandler('test.log', 'a+')
+        self.__fh.setLevel(self.__num_level)
         self.__fh.setFormatter(verbose_fmt)
 
     def create(self, name):
-        logger = getLogger(name)
-        logger.setLevel(DEBUG)
-        logger.addHandler(self.__sh)
-        logger.addHandler(self.__fh)
-        logger.propagate = False
+        my_logger = logging.getLogger(name)
+        my_logger.setLevel(self.__num_level)
+        my_logger.addHandler(self.__sh)
+        my_logger.addHandler(self.__fh)
+        my_logger.propagate = False
+        return my_logger
 
 
-def main():
+def main(log_level='WARN'):
     try:
-        logger = ConfiguredLogger().create(__name__)
-        logger.debug('Debug')
-        logger.info('Info')
-        logger.warning('Warn')
-        logger.error('Error')
-        logger.critical('Critical')
+        # my_logger = ConfiguredLogger().create(__name__)
+        my_logger = HandmadeLogger(log_level).create(__name__)
+        my_logger.debug('Debug')
+        my_logger.info('Info')
+        my_logger.warning('Warn')
+        my_logger.error('Error')
+        my_logger.critical('Critical')
         raise ValueError('Error test')
 
     except Exception as e:
         ### Error message only
-        logger.error(e)
-        logger.exception(e, exc_info=False)
+        my_logger.error(e)
+        my_logger.exception(e, exc_info=False)
 
         ### With stacktrace
-        logger.error(e, exc_info=True)
-        logger.exception(e)
+        my_logger.error(e, exc_info=True)
+        my_logger.exception(e)
 
         ### Without stacktrace
-        logger.error('{}: {}'.format(str(e.__class__.__name__), str(e)))
-        logger.error(format_exception_only(type(e), e)[0].rstrip('\n'))
+        my_logger.error('{}: {}'.format(str(e.__class__.__name__), str(e)))
+        my_logger.error(format_exception_only(type(e), e)[0].rstrip('\n'))
 
 
 if __name__ == '__main__':
-    main()
+    log_level = 'WARN'
+    if len(sys.argv) > 1:
+        log_level = sys.argv[1]
+    main(log_level)
