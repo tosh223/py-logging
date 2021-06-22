@@ -16,7 +16,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: test_logging
-      CodeUri: src/test_logging/
+      CodeUri: lambda/logging/
       Handler: lambda_function.lambda_handler
       Runtime: python3.8
       MemorySize: 128
@@ -30,14 +30,14 @@ Resources:
   # Glue job
   # https://docs.aws.amazon.com/glue/latest/dg/add-job-python.html
   ########################################
-  FunctionTestLogging:
+  GlueJobTestLogging:
     Type: AWS::Glue::Job
     Properties: 
       Name: test_logging
       Command:
         Name: pythonshell
         PythonVersion: 3
-        ScriptLocation: !Sub "${S3GlueScriptLocation}/test_logging.py"
+        ScriptLocation: !Sub "${S3GlueScriptLocation}/log.py"
       DefaultArguments:
         --log_level: DEBUG
       ExecutionProperty:
