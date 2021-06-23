@@ -23,7 +23,6 @@ class HandmadeLogger():
         logger = logging.getLogger(name)
         logger.setLevel(self.__num_level)
         logger.addHandler(self.__sh)
-        logger.addHandler(self.__fh)
         logger.propagate = False
 
 

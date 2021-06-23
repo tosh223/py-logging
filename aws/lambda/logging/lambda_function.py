@@ -1,32 +1,25 @@
 import os
+import sys
+import json
 import logging
-from time import gmtime
+import traceback
 
 LOG_LEVEL = os.environ.get('LOG_LEVEL')
+level = getattr(logging, LOG_LEVEL)
+FMT = '%(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
+fmt = logging.Formatter(fmt=FMT, style='%')
 
-class Logger():
-    def __init__(self):
-        FMT = '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
-        DATE_FMT = '%Y-%m-%d %H:%M:%S'
-        verbose_fmt = logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
-        verbose_fmt.converter = gmtime
+sh = logging.StreamHandler()
+sh.setLevel(level)
+sh.setFormatter(fmt)
 
-        self.__num_level = getattr(logging, LOG_LEVEL)
-        self.__sh = logging.StreamHandler()
-        self.__sh.setLevel(self.__num_level)
-        self.__sh.setFormatter(verbose_fmt)
-
-    def create(self, name):
-        logger = logging.getLogger(name)
-        logger.setLevel(self.__num_level)
-        logger.addHandler(self.__sh)
-        logger.addHandler(self.__fh)
-        logger.propagate = False
-
+logger = logging.getLogger(__name__)
+logger.setLevel(level)
+logger.addHandler(sh)
+logger.propagate = False
 
 def main(event, context):
     try:
-        logger = Logger().create(__name__)
         logger.debug('Debug')
         logger.info('Info')
         logger.warning('Warn')
@@ -39,7 +32,14 @@ def main(event, context):
         raise ValueError('Error test')
 
     except Exception as e:
-        logger.error('{}: {}'.format(str(e.__class__.__name__), str(e)))
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        traceback_str = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        err_msg = json.dumps({
+            "errorType": exc_type.__name__,
+            "errorMessage": str(exc_value),
+            "stackTrace": traceback_str
+        })
+        logger.error(err_msg)
 
 def lambda_handler(event, context):
     main(event, context)
