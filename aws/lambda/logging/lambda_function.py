@@ -4,8 +4,7 @@ import json
 import logging
 import traceback
 
-LOG_LEVEL = os.environ.get('LOG_LEVEL')
-level = getattr(logging, LOG_LEVEL)
+level = getattr(logging, os.environ.get('LOG_LEVEL'))
 FMT = '%(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
 fmt = logging.Formatter(fmt=FMT, style='%')
 

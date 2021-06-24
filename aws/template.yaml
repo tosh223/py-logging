@@ -45,5 +45,19 @@ Resources:
       GlueVersion: 1.0
       MaxCapacity: 0.0625
       MaxRetries: 0
-      Role: String
+      Role: !Ref GlueJobExecuteRole
       Timeout: 1
+
+  GlueJobExecuteRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: AWSGlueServiceRoleTestLogging
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'
