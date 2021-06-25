@@ -40,6 +40,7 @@ Resources:
         ScriptLocation: !Sub "${S3GlueScriptLocation}/log.py"
       DefaultArguments:
         --log_level: DEBUG
+        --enable-continuous-cloudwatch-log: True
       ExecutionProperty:
         MaxConcurrentRuns: 1
       GlueVersion: 1.0

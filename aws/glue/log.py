@@ -5,9 +5,12 @@ from awsglue.utils import getResolvedOptions
 
 args = getResolvedOptions(sys.argv, ['log_level'])
 
+print(logging.getLogger().handlers) # [<StreamHandler <stderr> (NOTSET)>]
+
 level = getattr(logging, args['log_level'])
-FMT = '%(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
-fmt = logging.Formatter(fmt=FMT, style='%')
+FMT = '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
+DATE_FMT = '%Y-%m-%d %H:%M:%S'
+fmt = logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
 
 sh = logging.StreamHandler(stream=sys.stdout)
 sh.setLevel(level)
@@ -21,14 +24,9 @@ logger.setLevel(level)
 logger.addHandler(sh)
 logger.propagate = False
 
-try:
-    logger.debug('Debug')
-    logger.info('Info')
-    logger.warning('Warn')
-    logger.error('Error')
-    logger.critical('Critical')
-    raise ValueError('Error test')
-
-except Exception as e:
-    logger.exception(e)
-    exit(e) 
+logger.debug('Debug')
+logger.info('Info')
+logger.warning('Warn')
+logger.error('Error')
+logger.critical('Critical')
+raise ValueError('Error test')
