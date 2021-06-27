@@ -5,17 +5,23 @@ import logging
 import traceback
 
 level = getattr(logging, os.environ.get('LOG_LEVEL'))
-FMT = '%(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
-fmt = logging.Formatter(fmt=FMT, style='%')
+FMT = '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
+DATE_FMT = '%Y-%m-%d %H:%M:%S'
+fmt = logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
 
 sh = logging.StreamHandler()
 sh.setLevel(level)
 sh.setFormatter(fmt)
 
+print(logging.getLogger().handlers) # [<LambdaLoggerHandler (NOTSET)>]
+logger = logging.getLogger()
+[logger.removeHandler(h) for h in logger.handlers]
+
 logger = logging.getLogger(__name__)
 logger.setLevel(level)
 logger.addHandler(sh)
-logger.propagate = False
+logger.propagate = True
+# logger.propagate = False
 
 def main(event, context):
     try:
@@ -31,11 +37,10 @@ def main(event, context):
         raise ValueError('Error test')
 
     except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback_str = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        traceback_str = traceback.format_exc().splitlines()
         err_msg = json.dumps({
-            "errorType": exc_type.__name__,
-            "errorMessage": str(exc_value),
+            "errorType": e.__class__.__name__,
+            "errorMessage": e.__str__(),
             "stackTrace": traceback_str
         })
         logger.error(err_msg)
