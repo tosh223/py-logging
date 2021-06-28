@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import logging
 import traceback
@@ -20,8 +19,7 @@ logger = logging.getLogger()
 logger = logging.getLogger(__name__)
 logger.setLevel(level)
 logger.addHandler(sh)
-logger.propagate = True
-# logger.propagate = False
+logger.propagate = False
 
 def main(event, context):
     try:
