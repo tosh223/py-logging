@@ -168,3 +168,4 @@ override.tf.json
 terraform.rc
 
 *.tfbackend
+zip

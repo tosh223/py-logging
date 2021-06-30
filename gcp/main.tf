@@ -35,7 +35,9 @@ resource "google_cloudfunctions_function" "test_logging" {
   entry_point           = "handler"
   trigger_http          = true
   service_account_email = google_service_account.sa_functions_test_logging.email
-
+  environment_variables = {
+    LOG_LEVEL = "DEBUG"
+  }
 }
 
 data "archive_file" "test_logging" {

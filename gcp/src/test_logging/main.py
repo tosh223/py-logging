@@ -1,41 +1,41 @@
-from google.cloud import storage
-import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
+import os
+import json
+import logging
+import traceback
+
+level = getattr(logging, os.environ.get('LOG_LEVEL'))
+FMT = '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
+DATE_FMT = '%Y-%m-%d %H:%M:%S'
+fmt = logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
+
+sh = logging.StreamHandler()
+sh.setLevel(level)
+sh.setFormatter(fmt)
+
+print(logging.getLogger().handlers)
+logger = logging.getLogger()
+[logger.removeHandler(h) for h in logger.handlers]
+
+logger = logging.getLogger(__name__)
+logger.setLevel(level)
+logger.addHandler(sh)
+logger.propagate = False
 
 def handler(event, context):
-    # print('Event ID: {}'.format(context.event_id))
-    # print('Event type: {}'.format(context.event_type))
-    # print('Bucket: {}'.format(event['bucket']))
-    # print('File: {}'.format(event['bucket']))
-    # print('Metageneration: {}'.format(event['metageneration']))
-    # print('Created: {}'.format(event['timeCreated']))
-    # print('Updated: {}'.format(event['updated']))
+    try:
+        logger.debug('Debug')
+        logger.info('Info')
+        logger.warning('Warn')
 
-    if event['name'].split('.')[-1] != 'csv':
-        return
+        logger.error('Error')
+        logger.critical('Critical')
+        raise ValueError('Error test')
 
-    storage_client = storage.Client()
-    bucket_name = event['bucket']
-    bucket = storage_client.bucket(bucket_name)
-
-    # download
-    csv_file_name: str = event['name']
-    csv_file_path: str = f'/tmp/{csv_file_name}'
-    blob_csv = bucket.blob(event['name'])
-    blob_csv.download_to_filename(csv_file_path)
-
-    pq_file_name: str = event['name'].replace("csv", "parquet")
-    pq_file_path: str = f'/tmp/{pq_file_name}'
-    df: pd.DataFrame = pd.read_csv(csv_file_path, encoding="utf-8", header=0)
-    pq.write_table(pa.Table.from_pandas(df), pq_file_path, compression="snappy")
-
-    # upload
-    blob_pq = bucket.blob(pq_file_name)
-    blob_pq.upload_from_filename(pq_file_path)
-
-    print(
-        "File {} uploaded to {}.".format(
-            pq_file_name, bucket_name
-        )
-    )
+    except Exception as e:
+        traceback_str = traceback.format_exc().splitlines()
+        err_msg = json.dumps({
+            "errorType": e.__class__.__name__,
+            "errorMessage": e.__str__(),
+            "stackTrace": traceback_str
+        })
+        logger.error(err_msg)
