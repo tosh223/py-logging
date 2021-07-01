@@ -12,19 +12,23 @@ sh = logging.StreamHandler()
 sh.setLevel(level)
 sh.setFormatter(fmt)
 
-print(logging.getLogger().handlers)
-logger = logging.getLogger()
-[logger.removeHandler(h) for h in logger.handlers]
+# logger = logging.getLogger()
+# [logger.removeHandler(h) for h in logger.handlers]
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level)
 logger.addHandler(sh)
 logger.propagate = False
 
-def handler(event, context):
+def handler(request):
+    print(logging.getLogger().handlers)
+
+    request_json = request.get_json(silent=True)
+    request_args = request.args
+
     try:
         logger.debug('Debug')
-        logger.info('Info')
+        logger.info(f'Info {request_json}')
         logger.warning('Warn')
 
         logger.error('Error')
