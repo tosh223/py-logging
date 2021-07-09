@@ -15,7 +15,7 @@ Resources:
   FunctionTestLogging:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: test_logging
+      FunctionName: !Sub ${AWS::StackName}_test_logging
       CodeUri: lambda/logging/
       Handler: lambda_function.lambda_handler
       Runtime: python3.8
@@ -33,7 +33,7 @@ Resources:
   GlueJobTestLogging:
     Type: AWS::Glue::Job
     Properties: 
-      Name: test_logging
+      Name: !Sub ${AWS::StackName}_test_logging
       Command:
         Name: pythonshell
         PythonVersion: 3
@@ -52,7 +52,7 @@ Resources:
   GlueJobExecuteRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: AWSGlueServiceRoleTestLogging
+      RoleName: !Sub AWSGlueServiceRoleTestLogging_${AWS::StackName}
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
