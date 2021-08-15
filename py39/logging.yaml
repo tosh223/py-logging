@@ -12,6 +12,7 @@ handlers:
   console:
     class: logging.StreamHandler
     level: DEBUG
+    filters: [credentialsFilter]
     formatter: default
     stream: ext://sys.stdout
   file:
@@ -29,6 +30,10 @@ handlers:
     encoding: utf-8
     maxBytes: 1024
     backupCount: 3
+filters:
+  credentialsFilter:
+    (): __main__.CredentialsFilter
+    param: None
 formatters:
   default:
     format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

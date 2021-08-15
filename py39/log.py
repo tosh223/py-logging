@@ -7,6 +7,9 @@ from yaml import safe_load
 CONFIG_FILE = 'logging.yaml'
 
 class CredentialsFilter(Filter):
+    def __init__(self, param=None):
+        self.param = param
+
     def filter(self, record):
         return not record.getMessage().startswith('Credentials')
 
@@ -50,13 +53,13 @@ class HandmadeLogger():
 
 
 def main():
-    logger = HandmadeLogger().create(__name__)
-    # logger = ConfiguredLogger().create(__name__)
+    # logger = HandmadeLogger().create(__name__)
+    logger = ConfiguredLogger().create(__name__)
 
     try:
         logger.debug('Debug')
         logger.info('Info')
-        logger.info('Credentials: abcdefghijklmnop') # HandmadeLogger filters this record.
+        logger.info('Credentials: abcdefghijklmnop') # Logger filters this record.
         logger.warning('Warn')
         logger.error('Error')
         logger.critical('Critical')
