@@ -1,10 +1,14 @@
 from time import gmtime
-from logging import config, getLogger, Formatter, StreamHandler, FileHandler, DEBUG, WARN
+from logging import config, Filter, getLogger, Formatter, StreamHandler, FileHandler, DEBUG, WARN
 from traceback import format_exception_only
 
 from yaml import safe_load
 
 CONFIG_FILE = 'logging.yaml'
+
+class CredentialsFilter(Filter):
+    def filter(self, record):
+        return not record.getMessage().startswith('Credentials')
 
 
 class ConfiguredLogger():
@@ -40,14 +44,19 @@ class HandmadeLogger():
         logger.setLevel(DEBUG)
         logger.addHandler(self.__sh)
         logger.addHandler(self.__fh)
+        logger.addFilter(CredentialsFilter())
         logger.propagate = False
+        return logger
 
 
 def main():
+    logger = HandmadeLogger().create(__name__)
+    # logger = ConfiguredLogger().create(__name__)
+
     try:
-        logger = ConfiguredLogger().create(__name__)
         logger.debug('Debug')
         logger.info('Info')
+        logger.info('Credentials: abcdefghijklmnop') # HandmadeLogger filters this record.
         logger.warning('Warn')
         logger.error('Error')
         logger.critical('Critical')
