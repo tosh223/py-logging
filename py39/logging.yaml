@@ -18,6 +18,7 @@ handlers:
   file:
     class: logging.FileHandler
     level: WARN
+    filters: [credentialsFilter]
     formatter: verbose
     filename: test.log
     mode: a+
@@ -32,8 +33,8 @@ handlers:
     backupCount: 3
 filters:
   credentialsFilter:
-    (): __main__.CredentialsFilter
-    param: None
+    (): __main__.MyLoggingFilter
+    level: INFO
 formatters:
   default:
     format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

@@ -1,3 +1,4 @@
+import os
 from time import gmtime
 from logging import config, Filter, getLogger, Formatter, StreamHandler, FileHandler, DEBUG, WARN
 from traceback import format_exception_only
@@ -6,17 +7,35 @@ from yaml import safe_load
 
 CONFIG_FILE = 'logging.yaml'
 
-class CredentialsFilter(Filter):
-    def __init__(self, param=None):
-        self.param = param
+class MyLoggingFilter(Filter):
+    def __init__(self, level=None):
+        self.__target_levelno = self.__get_levelno(level)
 
     def filter(self, record):
-        return not record.getMessage().startswith('Credentials')
+        if record.levelno >= self.__target_levelno:
+            return self.__check_message(record.getMessage())
+        else:
+            return False
 
+    @staticmethod
+    def __get_levelno(level_name):
+        levelno_dict = {
+            'DEBUG': 10,
+            'INFO': 20,
+            'WARN': 30,
+            'ERROR': 40,
+            'CRITICAL': 50,
+        }
+        return levelno_dict.get(level_name, 0)
+
+    @staticmethod
+    def __check_message(message):
+        return not message.startswith('Credentials')
 
 class ConfiguredLogger():
     def __init__(self):
-        with open(CONFIG_FILE) as file:
+        current_dir = os.path.dirname(__file__)
+        with open(current_dir + '/' + CONFIG_FILE) as file:
             conf = safe_load(file)
         config.dictConfig(conf)
         Formatter.converter = gmtime
@@ -47,7 +66,7 @@ class HandmadeLogger():
         logger.setLevel(DEBUG)
         logger.addHandler(self.__sh)
         logger.addHandler(self.__fh)
-        logger.addFilter(CredentialsFilter())
+        logger.addFilter(MyLoggingFilter())
         logger.propagate = False
         return logger
 
