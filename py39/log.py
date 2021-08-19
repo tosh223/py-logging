@@ -1,11 +1,10 @@
 import os
+import argparse
 from time import gmtime
 from logging import config, Filter, getLogger, Formatter, StreamHandler, FileHandler, DEBUG, WARN
 from traceback import format_exception_only
 
 from yaml import safe_load
-
-CONFIG_FILE = 'logging.yaml'
 
 class MyLoggingFilter(Filter):
     def __init__(self, level=None):
@@ -33,11 +32,15 @@ class MyLoggingFilter(Filter):
         return not message.startswith('Credentials')
 
 class ConfiguredLogger():
-    def __init__(self):
+    def __init__(self, config_file=None):
         current_dir = os.path.dirname(__file__)
-        with open(current_dir + '/' + CONFIG_FILE) as file:
-            conf = safe_load(file)
-        config.dictConfig(conf)
+        with open(current_dir + '/' + config_file) as file:
+            _, ext = os.path.splitext(config_file)
+            if ext in ['.yaml', '.yml']:
+                conf = safe_load(file)
+                config.dictConfig(conf)
+            else:
+                config.fileConfig(file)
         Formatter.converter = gmtime
     
     def create(self, name):
@@ -71,11 +74,24 @@ class HandmadeLogger():
         return logger
 
 
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="logger config file", type=str, default=None
+    )
+
+    return parser.parse_args()
+
+
 def main():
-    # logger = HandmadeLogger().create(__name__)
-    logger = ConfiguredLogger().create(__name__)
+    config_file = get_args().config
+    if config_file:
+        logger_factory = ConfiguredLogger(config_file=config_file)
+    else:
+        logger_factory = HandmadeLogger()
 
     try:
+        logger = logger_factory.create(__name__)
         logger.debug('Debug')
         logger.info('Info')
         logger.info('Credentials: abcdefghijklmnop') # Logger filters this record.
