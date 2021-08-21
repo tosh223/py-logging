@@ -39,8 +39,13 @@ class ConfiguredLogger():
             if ext in ['.yaml', '.yml']:
                 conf = safe_load(file)
                 config.dictConfig(conf)
-            else:
+            elif ext == '.conf':
                 config.fileConfig(file)
+            elif ext == '.json':
+                pass
+            else:
+                pass
+
         Formatter.converter = gmtime
     
     def create(self, name):
