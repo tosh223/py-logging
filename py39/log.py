@@ -1,7 +1,7 @@
 import os
 import argparse
 from time import gmtime
-from logging import config, Filter, getLogger, Formatter, StreamHandler, FileHandler, DEBUG, WARN
+from logging import config, getLogger, Filter, Formatter, FileHandler, StreamHandler, DEBUG, WARNING
 from traceback import format_exception_only
 
 from yaml import safe_load
@@ -21,7 +21,7 @@ class MyLoggingFilter(Filter):
         levelno_dict = {
             'DEBUG': 10,
             'INFO': 20,
-            'WARN': 30,
+            'WARNING': 30,
             'ERROR': 40,
             'CRITICAL': 50,
         }
@@ -62,7 +62,7 @@ class HandmadeLogger():
         verbose_fmt.converter = gmtime
 
         self.__sh = StreamHandler()
-        self.__sh.setLevel(WARN)
+        self.__sh.setLevel(WARNING)
         self.__sh.setFormatter(default_fmt)
 
         self.__fh = FileHandler('test.log', 'a+')
@@ -100,7 +100,7 @@ def main():
         logger.debug('Debug')
         logger.info('Info')
         logger.info('Credentials: abcdefghijklmnop') # Logger filters this record.
-        logger.warning('Warn')
+        logger.warning('Warning')
         logger.error('Error')
         logger.critical('Critical')
         raise ValueError('Error test')
