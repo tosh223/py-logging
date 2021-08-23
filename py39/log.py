@@ -1,31 +1,20 @@
 import os
 import argparse
 from time import gmtime
-from logging import config, getLogger, Filter, Formatter, FileHandler, StreamHandler, DEBUG, WARNING
+from logging import config, getLevelName, getLogger, Filter, Formatter, FileHandler, StreamHandler, DEBUG, WARNING
 from traceback import format_exception_only
 
 from yaml import safe_load
 
 class MyLoggingFilter(Filter):
-    def __init__(self, level=None):
-        self.__target_levelno = self.__get_levelno(level)
+    def __init__(self, level='WARNING'):
+        self.__target_levelno = getLevelName(level)
 
     def filter(self, record):
         if record.levelno >= self.__target_levelno:
             return self.__check_message(record.getMessage())
         else:
             return False
-
-    @staticmethod
-    def __get_levelno(level_name):
-        levelno_dict = {
-            'DEBUG': 10,
-            'INFO': 20,
-            'WARNING': 30,
-            'ERROR': 40,
-            'CRITICAL': 50,
-        }
-        return levelno_dict.get(level_name, 0)
 
     @staticmethod
     def __check_message(message):
