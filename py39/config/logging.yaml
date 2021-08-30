@@ -33,7 +33,7 @@ handlers:
     backupCount: 3
 filters:
   credentialsFilter:
-    (): __main__.MyLoggingFilter
+    (): logger.MyLoggingFilter
     level: INFO
 formatters:
   default:
