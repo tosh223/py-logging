@@ -2,11 +2,11 @@ version: 1
 disable_existing_loggers: False
 root:
   level: WARN
-  handlers: [file]
+  handlers: [console, file]
 loggers:
   __main__:
     level: INFO
-    handlers: [console, rotatingFile]
+    handlers: [rotatingFile]
     propagate: yes
 handlers:
   console:
@@ -20,20 +20,20 @@ handlers:
     level: WARN
     filters: [credentialsFilter]
     formatter: verbose
-    filename: test.log
+    filename: log/test.log
     mode: a+
     encoding: utf-8
   rotatingFile:
     class: logging.handlers.RotatingFileHandler
     level: DEBUG
     formatter: verbose
-    filename: rotate_test.log
+    filename: log/rotate_test.log
     encoding: utf-8
     maxBytes: 1024
     backupCount: 3
 filters:
   credentialsFilter:
-    (): logger.MyLoggingFilter
+    (): my_logging.CredentialsFilter
     level: INFO
 formatters:
   default:
