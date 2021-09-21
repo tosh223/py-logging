@@ -1,7 +1,9 @@
 import argparse
-from my_logging import CredentialsFilter, FileConfig, StepByStepConfig
+import json
 from logging import getLogger
-from traceback import format_exception_only
+from traceback import format_exception_only, format_exc
+
+from my_logging import CredentialsFilter, FileConfig, StepByStepConfig
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -27,13 +29,22 @@ def main():
     except Exception as e:
         ### Error message only
         logger.error(e)
-        logger.exception(e, exc_info=False)
+        # logger.exception(e, exc_info=False)
 
-        ### With stacktrace
-        logger.error(e, exc_info=True)
+        ### Error message with stacktrace
+        # logger.error(e, exc_info=True)
         logger.exception(e)
 
-        ### Without stacktrace
+        ### Error message with stacktrace(json)
+        traceback_str = format_exc().splitlines()
+        err_msg = json.dumps({
+            "errorType": e.__class__.__name__,
+            "errorMessage": e.__str__(),
+            "stackTrace": traceback_str
+        })
+        logger.error(err_msg)
+
+        ### Error message without stacktrace
         logger.error('{}: {}'.format(str(e.__class__.__name__), str(e)))
         logger.error(format_exception_only(type(e), e)[0].rstrip('\n'))
 
