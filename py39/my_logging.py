@@ -1,7 +1,7 @@
 import os
 from time import gmtime
 from logging import \
-    config, getLevelName, getLogger, \
+    config, getLogger, \
     Filter, Formatter, FileHandler, StreamHandler, \
     DEBUG, WARNING
 
@@ -53,22 +53,19 @@ class StepByStepConfig():
         fh.setFormatter(verbose_fmt)
 
         # Set handlers to root logger
-        logger = getLogger('root')
+        logger = getLogger()
         logger.setLevel(DEBUG)
         logger.addHandler(sh)
         logger.addHandler(fh)
 
 
 class CredentialsFilter(Filter):
-    def __init__(self, level='WARNING'):
-        self.__target_levelno = getLevelName(level)
+    def __init__(self):
+        pass
 
-    def filter(self, record):
-        if record.levelno >= self.__target_levelno:
-            return self.__check_message(record.getMessage())
-        else:
-            return False
+    def filter(self, record) -> bool:
+        return self.__check_message(record.getMessage())
 
     @staticmethod
-    def __check_message(message):
+    def __check_message(message) -> bool:
         return not message.startswith('Credentials')
