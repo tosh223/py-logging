@@ -42,6 +42,7 @@ class StepByStepConfig():
         sh = StreamHandler()
         sh.setLevel(WARNING)
         sh.setFormatter(default_fmt)
+        sh.addFilter(CredentialsFilter())
 
         # FileHandler
         fh_fmt = '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
@@ -51,6 +52,7 @@ class StepByStepConfig():
         fh = FileHandler(LOG_FILE_NAME, 'a+')
         fh.setLevel(DEBUG)
         fh.setFormatter(verbose_fmt)
+        fh.addFilter(CredentialsFilter())
 
         # Set handlers to root logger
         logger = getLogger()

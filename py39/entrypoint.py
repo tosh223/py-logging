@@ -3,7 +3,7 @@ import json
 from logging import getLogger
 from traceback import format_exception_only, format_exc
 
-from my_logging import CredentialsFilter, FileConfig, StepByStepConfig
+from my_logging import FileConfig, StepByStepConfig
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -15,15 +15,15 @@ def get_args() -> argparse.Namespace:
 
 def main():
     logger = getLogger(__name__)
-    logger.addFilter(CredentialsFilter())
+
+    logger.debug('Debug')
+    logger.info('Info')
+    logger.critical('Credentials: abcdefghijklmnop') # Logger filters this record.
+    logger.warning('Warning')
+    logger.error('Error')
+    logger.critical('Critical')
 
     try:
-        logger.debug('Debug')
-        logger.info('Info')
-        logger.critical('Credentials: abcdefghijklmnop') # Logger filters this record.
-        logger.warning('Warning')
-        logger.error('Error')
-        logger.critical('Critical')
         raise ValueError('Error test')
 
     except Exception as e:
