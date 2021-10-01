@@ -5,14 +5,14 @@ import time
 import traceback
 
 def set_logger():
-    level = getattr(logging, os.environ.get('LOG_LEVEL'))
-    FMT = '%(asctime)s.%(msecs)03d\t%(filename)s:%(funcName)s:%(lineno)d\t[%(levelname)s]%(message)s'
+    level = logging.getLevelName(os.environ.get('LOG_LEVEL'))
+    FMT = '%(asctime)s.%(msecs)03d\t%(aws_request_id)s\t%(filename)s:%(funcName)s:%(lineno)d\t[%(levelname)s]%(message)s'
     DATE_FMT = '%Y-%m-%d %H:%M:%S'
     fmt = logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
     fmt.converter = time.gmtime
 
     root_logger = logging.getLogger()
-    print(root_logger.handlers) # [<LambdaLoggerHandler (NOTSET)>]
+    root_logger.setLevel(level)
     root_logger.handlers[0].setLevel(level)
     root_logger.handlers[0].setFormatter(fmt)
 
@@ -23,7 +23,7 @@ def main(event, context):
     logger.warning('Warn')
 
     logger.info(event)
-    logger.info(context)
+    logger.info(vars(context))
 
     try:
         raise ValueError('Error test')
