@@ -1,7 +1,7 @@
 version: 1
 disable_existing_loggers: False
 root:
-  level: WARN
+  level: WARNING
   handlers: [console, file]
 loggers:
   __main__:

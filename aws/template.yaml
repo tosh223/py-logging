@@ -23,8 +23,25 @@ Resources:
       Tracing: Active
       Timeout: 10
       Environment:
-        Variables: 
+        Variables:
           LOG_LEVEL: DEBUG
+
+  FunctionTestLoggingImage:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}_test_logging_image
+      PackageType: Image
+      ImageUri: ${AWS::AccountId}.dkr.ecr.{AWS::Region}.amazonaws.com/pycon-jp-2021:test_logging_image
+      MemorySize: 128
+      Tracing: Active
+      Timeout: 10
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
+    Metadata:
+      DockerTag: test_logging_image
+      DockerContext: ./lambda/image_type
+      Dockerfile: Dockerfile
 
   ########################################
   # Glue job
