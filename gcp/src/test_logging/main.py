@@ -1,38 +1,37 @@
 import os
 import json
-import logging
+from logging import Formatter, getLevelName, getLogger
 import traceback
 
-level = getattr(logging, os.environ.get('LOG_LEVEL'))
-FMT = '%(asctime)s.%(msecs)03d %(filename)s:%(funcName)s:%(lineno)d [%(levelname)s]%(message)s'
+### For using default settings
+# from google.cloud.logging import Client
+# client = Client()
+# client.setup_logging()      # [<StructuredLogHandler <stderr> (NOTSET)>]
+
+### For custom settings
+from google.cloud.logging.handlers import StructuredLogHandler, setup_logging
+
+FMT = '%(asctime)s.%(msecs)03d\t%(filename)s:%(funcName)s:%(lineno)d\t[%(levelname)s]%(message)s'
 DATE_FMT = '%Y-%m-%d %H:%M:%S'
-fmt = logging.Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
-
-sh = logging.StreamHandler()
-sh.setLevel(level)
-sh.setFormatter(fmt)
-
-# logger = logging.getLogger()
-# [logger.removeHandler(h) for h in logger.handlers]
-
-logger = logging.getLogger(__name__)
-logger.setLevel(level)
-logger.addHandler(sh)
-logger.propagate = False
+fmt = Formatter(fmt=FMT, datefmt=DATE_FMT, style='%')
+level = getLevelName(os.environ.get('LOG_LEVEL'))
+handler = StructuredLogHandler()
+handler.setLevel(level)
+handler.setFormatter(fmt)
+setup_logging(handler, log_level=level)
 
 def handler(request):
-    print(logging.getLogger().handlers)
-
     request_json = request.get_json(silent=True)
     request_args = request.args
 
-    try:
-        logger.debug('Debug')
-        logger.info(f'Info {request_json}')
-        logger.warning('Warn')
+    logger = getLogger(__name__)
+    logger.debug('Debug')
+    logger.info(f'Info {request_json}')
+    logger.warning('Warn')
+    logger.error('Error')
+    logger.critical('Critical')
 
-        logger.error('Error')
-        logger.critical('Critical')
+    try:
         raise ValueError('Error test')
 
     except Exception as e:
@@ -43,3 +42,4 @@ def handler(request):
             "stackTrace": traceback_str
         })
         logger.error(err_msg)
+        return err_msg

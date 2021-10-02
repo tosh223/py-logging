@@ -1,3 +1,1 @@
-google-cloud-storage
-pandas
-pyarrow
+google-cloud-logging
