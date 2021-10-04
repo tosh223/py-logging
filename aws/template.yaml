@@ -47,14 +47,33 @@ Resources:
   # Glue job
   # https://docs.aws.amazon.com/glue/latest/dg/add-job-python.html
   ########################################
-  GlueJobTestLogging:
+  GlueJobLoggingDefault:
     Type: AWS::Glue::Job
     Properties: 
-      Name: !Sub ${AWS::StackName}_test_logging
+      Name: !Sub ${AWS::StackName}_logging_default
       Command:
         Name: pythonshell
         PythonVersion: 3
-        ScriptLocation: !Sub "${S3GlueScriptLocation}/log.py"
+        ScriptLocation: !Sub "${S3GlueScriptLocation}/default_logger.py"
+      DefaultArguments:
+        --log_level: DEBUG
+        --enable-continuous-cloudwatch-log: True
+      ExecutionProperty:
+        MaxConcurrentRuns: 1
+      GlueVersion: 1.0
+      MaxCapacity: 0.0625
+      MaxRetries: 0
+      Role: !Ref GlueJobExecuteRole
+      Timeout: 1
+
+  GlueJobLoggingCustom:
+    Type: AWS::Glue::Job
+    Properties: 
+      Name: !Sub ${AWS::StackName}_logging_custom
+      Command:
+        Name: pythonshell
+        PythonVersion: 3
+        ScriptLocation: !Sub "${S3GlueScriptLocation}/custom_logger.py"
       DefaultArguments:
         --log_level: DEBUG
         --enable-continuous-cloudwatch-log: True
