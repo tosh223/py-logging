@@ -1,5 +1,4 @@
 provider "google" {
-  version = "3.60.0"
   project = var.project
   region  = var.region
   zone    = var.zone
@@ -23,13 +22,12 @@ resource "google_service_account" "sa_functions_test_logging" {
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloudfunctions_function
 ##############################################
 
-# test_logging
-resource "google_cloudfunctions_function" "test_logging" {
-  name                  = "test_logging"
-  description           = "test_logging"
+resource "google_cloudfunctions_function" "logging_function" {
+  name                  = "logging_function"
+  description           = "logging_function"
   runtime               = "python39"
   source_archive_bucket = "${var.project}-zip-bucket"
-  source_archive_object = google_storage_bucket_object.packages_test_logging.name
+  source_archive_object = google_storage_bucket_object.packages_logging_function.name
   available_memory_mb   = 128
   timeout               = 30
   entry_point           = "handler"
@@ -40,21 +38,78 @@ resource "google_cloudfunctions_function" "test_logging" {
   }
 }
 
-data "archive_file" "test_logging" {
+data "archive_file" "logging_function" {
   type        = "zip"
-  source_dir  = "src/test_logging"
-  output_path = "zip/test_logging.zip"
+  source_dir  = "src/logging-function"
+  output_path = "zip/logging_function.zip"
 }
 
-resource "google_storage_bucket_object" "packages_test_logging" {
-  name   = "packages/test_logging.${data.archive_file.test_logging.output_md5}.zip"
+resource "google_storage_bucket_object" "packages_logging_function" {
+  name   = "packages/logging_function.${data.archive_file.logging_function.output_md5}.zip"
   bucket = "${var.project}-zip-bucket"
-  source = data.archive_file.test_logging.output_path
+  source = data.archive_file.logging_function.output_path
+}
+
+##############################################
+# Cloud Run
+##############################################
+resource "google_cloud_run_service" "logging-run" {
+  name     = "logging-run"
+  location = var.region
+  template {
+    spec {
+      containers {
+        image = "gcr.io/${var.project}/logging-run:latest"
+        resources {
+          limits = {
+            "cpu" : 1.0
+            "memory" : "128Mi"
+          }
+        }
+        env {
+          name = "LOG_LEVEL"
+          value = "DEBUG"
+        }
+        env {
+          name = "SOURCECODE_MD5"
+          value = data.archive_file.logging_run.output_md5
+        }
+      }
+      service_account_name = google_service_account.sa_functions_test_logging.email
+    }
+  }
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+
+data "archive_file" "logging_run" {
+  type        = "zip"
+  source_dir  = "src/logging-run"
+  output_path = "zip/logging_run.zip"
+}
+
+resource "null_resource" "build" {
+  triggers = {
+    file_hashes = jsonencode({
+      for fn in fileset("src/logging-run", "**") :
+        fn => filesha256("src/logging-run/${fn}")
+    })
+  }
+  provisioner "local-exec" {
+    command = "gcloud builds submit --project ${var.project} --tag gcr.io/${var.project}/logging-run"
+    working_dir = "./src/logging-run"
+  }
 }
 
 ##############################################
 # Output
 ##############################################
-output "function_test_logging_url" {
-  value = google_cloudfunctions_function.test_logging.https_trigger_url
+output "function_logging_url" {
+  value = google_cloudfunctions_function.logging_function.https_trigger_url
+}
+
+output "cloud_run_logging_url" {
+  value = google_cloud_run_service.logging-run.status[0].url
 }
