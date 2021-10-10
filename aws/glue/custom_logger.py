@@ -16,7 +16,7 @@ sh.setLevel(level)
 sh.setFormatter(fmt)
 
 root_logger = logging.getLogger()
-[root_logger.removeHandler(h) for h in root_logger.handlers]
+root_logger.handlers.clear()
 root_logger.setLevel(level)
 root_logger.addHandler(sh)
 
